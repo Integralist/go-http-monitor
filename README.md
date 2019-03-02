@@ -20,9 +20,9 @@
 -stats int
       statistic output interval in seconds (default 10)
 -t int
-      average alarm threshold (shorthand) (default 10)
+      average alarm threshold time period (shorthand) (default 10)
 -threshold int
-      average alarm threshold (default 10)
+      average alarm threshold time period (default 10)
 -u string
       unit of time of the alarm threshold (shorthand) (default "second")
 -unit string
@@ -74,7 +74,7 @@ The following requirements were provided by the business:
 
 ## TODO
 
-- figure out when access.log is updated
+- figure out how best to access.log and track changes over time period
 - figure out how to populate access.log at runtime (simulating real-time requests)
 - figure out how to calculate when requests per section go over/under a threshold
 - figure out what 'interesting' stats to show every 10s

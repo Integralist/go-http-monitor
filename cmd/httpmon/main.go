@@ -5,9 +5,10 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/integralist/go-http-monitor/internal/coordinator"
+	"github.com/integralist/go-http-monitor/internal/alarms"
 	"github.com/integralist/go-http-monitor/internal/instrumentator"
-	"github.com/integralist/go-http-monitor/internal/thresholds"
+	"github.com/integralist/go-http-monitor/internal/logs"
+	"github.com/integralist/go-http-monitor/internal/stats"
 	"github.com/sirupsen/logrus"
 )
 
@@ -15,14 +16,13 @@ import (
 var instr instrumentator.Instr
 
 var (
-	alarms     chan thresholds.Alarm
-	evaluation int
-	help       *bool
-	location   string
-	stats      int
-	threshold  int
-	unit       string
-	version    string // set via -ldflags in Makefile
+	evaluation    int
+	help          *bool
+	location      string
+	statsInterval int
+	threshold     int
+	unit          string
+	version       string // set via -ldflags in Makefile
 )
 
 func init() {
@@ -35,31 +35,28 @@ func init() {
 	// flag configuration
 	help = flag.Bool("help", false, "show available command flags")
 	const (
-		flagEvaluationValue = 2
-		flagEvaluationUsage = "monitoring evaluation period in minutes"
-		flagLocationValue   = "./access.log"
-		flagLocationUsage   = "location of access.log file to monitor"
-		flagStatsValue      = 10
-		flagStatsUsage      = "statistic output interval in seconds"
-		flagThresholdValue  = 10
-		flagThresholdUsage  = "average alarm threshold"
-		flagUnitValue       = "second"
-		flagUnitUsage       = "unit of time of the alarm threshold"
+		flagEvaluationValue    = 2
+		flagEvaluationUsage    = "monitoring evaluation period in minutes"
+		flagLocationValue      = "./access.log"
+		flagLocationUsage      = "location of access.log file to monitor"
+		flagStatsIntervalValue = 10
+		flagStatsIntervalUsage = "statistic output interval in seconds"
+		flagThresholdValue     = 10
+		flagThresholdUsage     = "average alarm threshold time period"
+		flagUnitValue          = "second"
+		flagUnitUsage          = "unit of time of the alarm threshold"
 	)
 	flag.IntVar(&evaluation, "evaluation", flagEvaluationValue, flagEvaluationUsage)
 	flag.IntVar(&evaluation, "e", flagEvaluationValue, flagEvaluationUsage+" (shorthand)")
 	flag.StringVar(&location, "location", flagLocationValue, flagLocationUsage)
 	flag.StringVar(&location, "l", flagLocationValue, flagLocationUsage+" (shorthand)")
-	flag.IntVar(&stats, "stats", flagStatsValue, flagStatsUsage)
-	flag.IntVar(&stats, "s", flagStatsValue, flagStatsUsage+" (shorthand)")
+	flag.IntVar(&statsInterval, "stats", flagStatsIntervalValue, flagStatsIntervalUsage)
+	flag.IntVar(&statsInterval, "s", flagStatsIntervalValue, flagStatsIntervalUsage+" (shorthand)")
 	flag.IntVar(&threshold, "threshold", flagThresholdValue, flagThresholdUsage)
 	flag.IntVar(&threshold, "t", flagThresholdValue, flagThresholdUsage+" (shorthand)")
 	flag.StringVar(&unit, "unit", flagUnitValue, flagUnitUsage)
 	flag.StringVar(&unit, "u", flagUnitValue, flagUnitUsage+" (shorthand)")
 	flag.Parse()
-
-	// channel configuration
-	alarms = make(chan thresholds.Alarm)
 
 	// instrumentation configuration
 	//
@@ -107,10 +104,15 @@ func main() {
 		}
 	}()
 
-	// start mediating the various background goroutines
-	coordinator.Coordinate(location, alarms, &instr)
+	// channel creation for synchronizing data
+	alarmChannel := make(chan alarms.Alarm)
+
+	// start various background goroutines
+	go logs.Process(location, statsInterval, &instr)
+	go alarms.Process(alarmChannel, &instr)
+	go stats.Process(&instr)
 
 	for {
-		// instr.Logger.Info("STARTED")
+		// keep program running until user stops it with <Ctrl-C>
 	}
 }
