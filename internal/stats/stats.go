@@ -1,8 +1,20 @@
 package stats
 
-import "github.com/integralist/go-http-monitor/internal/instrumentator"
+import (
+	"fmt"
+
+	"github.com/integralist/go-http-monitor/internal/instrumentator"
+)
+
+// Stat contains fields relevant to a statistical analysis.
+type Stat struct {
+}
 
 // Process ...
-func Process(instr *instrumentator.Instr) {
-	instr.Logger.Debug("STATS_PROCESSING")
+func Process(statChannel <-chan Stat, instr *instrumentator.Instr) {
+	instr.Logger.Debug("STAT_PROCESSING")
+
+	for s := range statChannel {
+		fmt.Printf("stat! %+v\n", s)
+	}
 }

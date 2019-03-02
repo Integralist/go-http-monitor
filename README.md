@@ -80,3 +80,5 @@ The following requirements were provided by the business:
 - figure out what 'interesting' stats to show every 10s
 - write test(s)
 - dockerize
+
+- name some packages more appropriately (e.g. verbs not nouns)

@@ -106,13 +106,15 @@ func main() {
 
 	// channel creation for synchronizing data
 	alarmChannel := make(chan alarms.Alarm)
+	statChannel := make(chan stats.Stat)
 
 	// start various background goroutines
-	go logs.Process(location, statsInterval, &instr)
+	go logs.Process(location, statChannel, alarmChannel, statsInterval, &instr)
 	go alarms.Process(alarmChannel, &instr)
-	go stats.Process(&instr)
+	go stats.Process(statChannel, &instr)
 
+	// keep program running until user stops it with <Ctrl-C>
 	for {
-		// keep program running until user stops it with <Ctrl-C>
+		logs.Generator()
 	}
 }
