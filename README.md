@@ -40,6 +40,6 @@ The following requirements were provided by the business:
 
 - Open goroutine for reading from access.log
 - Open goroutine for handling stats (msg via channel to alarms)
-- Open gorouting for alarms
+- Open goroutine for alarms
 - Use endless for loop to keep program open
 - Handle SIGINT signal so user can stop the program

@@ -5,7 +5,9 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/integralist/go-http-monitor/internal/coordinator"
 	"github.com/integralist/go-http-monitor/internal/instrumentator"
+	"github.com/integralist/go-http-monitor/internal/thresholds"
 	"github.com/sirupsen/logrus"
 )
 
@@ -13,6 +15,7 @@ import (
 var instr instrumentator.Instr
 
 var (
+	alarms    chan thresholds.Alarm
 	help      *bool
 	location  string
 	threshold int
@@ -44,6 +47,9 @@ func init() {
 	flag.StringVar(&unit, "unit", flagUnitValue, flagUnitUsage)
 	flag.StringVar(&unit, "u", flagUnitValue, flagUnitUsage+" (shorthand)")
 	flag.Parse()
+
+	// channel configuration
+	alarms = make(chan thresholds.Alarm)
 
 	// instrumentation configuration
 	//
@@ -90,6 +96,9 @@ func main() {
 			os.Exit(2)
 		}
 	}()
+
+	// start mediating the various background goroutines
+	coordinator.Coordinate(alarms, &instr)
 
 	for {
 		// instr.Logger.Info("STARTED")
