@@ -108,7 +108,7 @@ func main() {
 	}()
 
 	// start mediating the various background goroutines
-	coordinator.Coordinate(alarms, &instr)
+	coordinator.Coordinate(location, alarms, &instr)
 
 	for {
 		// instr.Logger.Info("STARTED")
