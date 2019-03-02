@@ -16,3 +16,30 @@ The following requirements were provided by the business:
 - Explain how you'd improve on this application design.
 - Have something else write to the log file.
 - Dockerize if possible.
+
+## Flags
+
+```
+-help
+      show available command flags
+-l string
+      location of access.log file to monitor (shorthand) (default "./")
+-location string
+      location of access.log file to monitor (default "./")
+-t int
+      average alarm threshold (shorthand) (default 10)
+-threshold int
+      average alarm threshold (default 10)
+-u string
+      unit of time of the alarm threshold (shorthand) (default "second")
+-unit string
+      unit of time of the alarm threshold (default "second")
+```
+
+## Process
+
+- Open goroutine for reading from access.log
+- Open goroutine for handling stats (msg via channel to alarms)
+- Open gorouting for alarms
+- Use endless for loop to keep program open
+- Handle SIGINT signal so user can stop the program
