@@ -15,12 +15,14 @@ import (
 var instr instrumentator.Instr
 
 var (
-	alarms    chan thresholds.Alarm
-	help      *bool
-	location  string
-	threshold int
-	unit      string
-	version   string // set via -ldflags in Makefile
+	alarms     chan thresholds.Alarm
+	evaluation int
+	help       *bool
+	location   string
+	stats      int
+	threshold  int
+	unit       string
+	version    string // set via -ldflags in Makefile
 )
 
 func init() {
@@ -33,15 +35,23 @@ func init() {
 	// flag configuration
 	help = flag.Bool("help", false, "show available command flags")
 	const (
-		flagLocationValue  = "./"
-		flagLocationUsage  = "location of access.log file to monitor"
-		flagThresholdValue = 10
-		flagThresholdUsage = "average alarm threshold"
-		flagUnitValue      = "second"
-		flagUnitUsage      = "unit of time of the alarm threshold"
+		flagEvaluationValue = 2
+		flagEvaluationUsage = "monitoring evaluation period in minutes"
+		flagLocationValue   = "./access.log"
+		flagLocationUsage   = "location of access.log file to monitor"
+		flagStatsValue      = 10
+		flagStatsUsage      = "statistic output interval in seconds"
+		flagThresholdValue  = 10
+		flagThresholdUsage  = "average alarm threshold"
+		flagUnitValue       = "second"
+		flagUnitUsage       = "unit of time of the alarm threshold"
 	)
+	flag.IntVar(&evaluation, "evaluation", flagEvaluationValue, flagEvaluationUsage)
+	flag.IntVar(&evaluation, "e", flagEvaluationValue, flagEvaluationUsage+" (shorthand)")
 	flag.StringVar(&location, "location", flagLocationValue, flagLocationUsage)
 	flag.StringVar(&location, "l", flagLocationValue, flagLocationUsage+" (shorthand)")
+	flag.IntVar(&stats, "stats", flagStatsValue, flagStatsUsage)
+	flag.IntVar(&stats, "s", flagStatsValue, flagStatsUsage+" (shorthand)")
 	flag.IntVar(&threshold, "threshold", flagThresholdValue, flagThresholdUsage)
 	flag.IntVar(&threshold, "t", flagThresholdValue, flagThresholdUsage+" (shorthand)")
 	flag.StringVar(&unit, "unit", flagUnitValue, flagUnitUsage)
