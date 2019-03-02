@@ -12,8 +12,11 @@ import (
 var instr instrumentator.Instr
 
 var (
-	location string
-	version  string // set via -ldflags in Makefile
+	help      *bool
+	location  string
+	threshold int
+	unit      string
+	version   string // set via -ldflags in Makefile
 )
 
 func init() {
@@ -24,12 +27,21 @@ func init() {
 	logrus.SetReportCaller(true) // TODO: benchmark for performance implications
 
 	// flag configuration
+	help = flag.Bool("help", false, "show available command flags")
 	const (
-		flagLocationValue = "./"
-		flagLocationUsage = "location of access.log file to monitor"
+		flagLocationValue  = "./"
+		flagLocationUsage  = "location of access.log file to monitor"
+		flagThresholdValue = 10
+		flagThresholdUsage = "average alarm threshold"
+		flagUnitValue      = "second"
+		flagUnitUsage      = "unit of time of the alarm threshold"
 	)
 	flag.StringVar(&location, "location", flagLocationValue, flagLocationUsage)
 	flag.StringVar(&location, "l", flagLocationValue, flagLocationUsage+" (shorthand)")
+	flag.IntVar(&threshold, "threshold", flagThresholdValue, flagThresholdUsage)
+	flag.IntVar(&threshold, "t", flagThresholdValue, flagThresholdUsage+" (shorthand)")
+	flag.StringVar(&unit, "unit", flagUnitValue, flagUnitUsage)
+	flag.StringVar(&unit, "u", flagUnitValue, flagUnitUsage+" (shorthand)")
 	flag.Parse()
 
 	// instrumentation configuration
@@ -51,6 +63,11 @@ func init() {
 }
 
 func main() {
+	if *help == true {
+		flag.PrintDefaults()
+		return
+	}
+
 	// note: I like log messages to be a bit more structured so I typically opt
 	// for a format such as 'VERB_STATE' and 'NOUN_STATE' (as this makes searching
 	// for errors within a log aggregator easier).
