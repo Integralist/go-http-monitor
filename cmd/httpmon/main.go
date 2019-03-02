@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"os"
+	"os/signal"
 
 	"github.com/integralist/go-http-monitor/internal/instrumentator"
 	"github.com/sirupsen/logrus"
@@ -77,5 +78,20 @@ func main() {
 	// debugging easier as you don't have to filter out pointless messages about
 	// things you already expected to happen, and the logs can instead focus on
 	// surfacing all the _unexpected_ things that happened.
-	instr.Logger.Info("STARTUP_SUCCESSFUL")
+	instr.Logger.Debug("STARTUP_SUCCESSFUL")
+
+	// handle Ctrl-C from user to stop the program
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt)
+	go func() {
+		for sig := range sigs {
+			instr.Logger.Info("CTRL-C RECEIVED")
+			instr.Logger.Info(sig)
+			os.Exit(2)
+		}
+	}()
+
+	for {
+		// instr.Logger.Info("STARTED")
+	}
 }
