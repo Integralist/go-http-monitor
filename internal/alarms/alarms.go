@@ -10,7 +10,7 @@ import (
 type Alarm struct {
 }
 
-// Process ...
+// Process an alarm sent to the specified channel
 func Process(alarmChannel <-chan Alarm, instr *instrumentator.Instr) {
 	instr.Logger.Debug("ALARM_PROCESSING")
 

@@ -10,7 +10,7 @@ import (
 type Stat struct {
 }
 
-// Process ...
+// Process data sent to the specified channel for statistical analysis.
 func Process(statChannel <-chan Stat, instr *instrumentator.Instr) {
 	instr.Logger.Debug("STAT_PROCESSING")
 

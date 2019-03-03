@@ -2,6 +2,10 @@
 
 > Network monitoring is the use of a system that constantly monitors a computer network for slow or failing components and that notifies the network administrator (via email, SMS or other alarms) in case of outages or other trouble. -- [Wikipedia](https://en.wikipedia.org/wiki/Network_monitoring)
 
+This program monitors an actively updated `access.log` file, and notifies users when thresholds are either exceeded or recover. The thresholds are configurable via command-line flags.
+
+This project was designed as part of a interview take-home code test, and so the program itself generates the `access.log` and populates it with data in order to simulate real traffic patterns (that logic is, as you can imagine, very basic).
+
 ## Flags
 
 ```
@@ -59,7 +63,7 @@ Which (as described by the common log file format) breaks down to:
 
 ## Requirements
 
-The following requirements were provided by the business:
+The following requirements were what I was provided with:
 
 - Consume an actively written-to w3c-formatted HTTP access log (https://www.w3.org/Daemon/User/Config/Logging.html). It should default to reading `/tmp/access.log` and be overrideable.
 - Display stats every 10s about the traffic during those 10s: the sections of the web site with the most hits, as well as interesting summary statistics on the traffic as a whole. A section is defined as being what's before the second '/' in the resource section of the log line. For example, the section for "/pages/create" is "/pages".
@@ -74,11 +78,9 @@ The following requirements were provided by the business:
 
 ## TODO
 
-- figure out how best to access.log and track changes over time period
-- figure out how to populate access.log at runtime (simulating real-time requests)
+- don't generate access.log records if user provides their own access.log
+- name some packages more appropriately (e.g. verbs not nouns)
 - figure out how to calculate when requests per section go over/under a threshold
 - figure out what 'interesting' stats to show every 10s
 - write test(s)
 - dockerize
-
-- name some packages more appropriately (e.g. verbs not nouns)

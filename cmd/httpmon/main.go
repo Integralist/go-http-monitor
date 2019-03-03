@@ -148,8 +148,10 @@ func main() {
 
 	// keep program running until user stops it with <Ctrl-C>
 	for {
-		// in the mean time we'll simulate http requests
-		line := generator.RandomRequest(ips, usernames, pages)
-		generator.Generate(f, line, &instr)
+		// in the mean time, if no active access log provided, we'll simulate http requests
+		if location == "./access.log" {
+			line := generator.RandomRequest(ips, usernames, pages, generator.LastDate)
+			generator.Generate(f, line, &instr)
+		}
 	}
 }
