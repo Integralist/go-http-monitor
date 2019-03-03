@@ -2,12 +2,14 @@ package main
 
 import (
 	"flag"
+	"io"
 	"os"
 	"os/signal"
 
 	"github.com/integralist/go-http-monitor/internal/alarms"
+	"github.com/integralist/go-http-monitor/internal/generator"
 	"github.com/integralist/go-http-monitor/internal/instrumentator"
-	"github.com/integralist/go-http-monitor/internal/logs"
+	"github.com/integralist/go-http-monitor/internal/processor"
 	"github.com/integralist/go-http-monitor/internal/stats"
 	"github.com/sirupsen/logrus"
 )
@@ -15,13 +17,17 @@ import (
 // instr contains pre-configured instrumentation tools
 var instr instrumentator.Instr
 
+// resources that will be passed around various package functions
 var (
 	evaluation    int
 	help          *bool
+	ips           []string
 	location      string
+	pages         []string
 	statsInterval int
 	threshold     int
 	unit          string
+	usernames     []string
 	version       string // set via -ldflags in Makefile
 )
 
@@ -74,6 +80,26 @@ func init() {
 			"location": location,
 		}),
 	}
+
+	// fake data for the sake of simulating http requests
+	ips = []string{
+		"127.0.0.1",
+		"127.0.0.2",
+		"127.0.0.3",
+		"127.0.0.4",
+		"127.0.0.5",
+	}
+	usernames = []string{
+		"Bob",
+		"Jane",
+		"Lisa",
+		"Mark",
+		"Simon",
+	}
+	pages = []string{
+		"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
+		"n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+	}
 }
 
 func main() {
@@ -93,28 +119,37 @@ func main() {
 	// surfacing all the _unexpected_ things that happened.
 	instr.Logger.Debug("STARTUP_SUCCESSFUL")
 
+	// open a r/w file descriptor for the access log so we can seek next position
+	f, err := os.Create(location)
+	if err != nil {
+		instr.Logger.Fatal("ACCESS_OPEN_FAILED")
+	}
+
 	// handle Ctrl-C from user to stop the program
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt)
-	go func() {
+	go func(f io.WriteCloser) {
 		for sig := range sigs {
+			f.Close()
 			instr.Logger.Info("CTRL-C RECEIVED")
 			instr.Logger.Info(sig)
 			os.Exit(2)
 		}
-	}()
+	}(f)
 
 	// channel creation for synchronizing data
 	alarmChannel := make(chan alarms.Alarm)
 	statChannel := make(chan stats.Stat)
 
 	// start various background goroutines
-	go logs.Process(location, statChannel, alarmChannel, statsInterval, &instr)
+	go processor.Process(location, statChannel, alarmChannel, statsInterval, &instr)
 	go alarms.Process(alarmChannel, &instr)
 	go stats.Process(statChannel, &instr)
 
 	// keep program running until user stops it with <Ctrl-C>
 	for {
-		logs.Generator()
+		// in the mean time we'll simulate http requests
+		line := generator.RandomRequest(ips, usernames, pages)
+		generator.Generate(f, line, &instr)
 	}
 }
