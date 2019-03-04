@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/integralist/go-http-monitor/internal/alarms"
 	"github.com/integralist/go-http-monitor/internal/instrumentator"
 	"github.com/integralist/go-http-monitor/internal/stats"
 )
@@ -27,7 +26,6 @@ type statReaderSeeker interface {
 func Process(
 	f statReaderSeeker,
 	statChannel chan<- stats.Stat,
-	alarmChannel chan<- alarms.Alarm,
 	statInterval int,
 	instr *instrumentator.Instr) {
 
@@ -74,7 +72,6 @@ func Process(
 
 		// send relevant information
 		statChannel <- stats.Stat{}
-		alarmChannel <- alarms.Alarm{}
 
 		time.Sleep(sleepInterval)
 		continue

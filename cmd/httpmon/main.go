@@ -153,9 +153,9 @@ func main() {
 	statChannel := make(chan stats.Stat)
 
 	// start various background goroutines, passing in their dependencies
-	go processor.Process(f, statChannel, alarmChannel, statsInterval, &instr)
+	go processor.Process(f, statChannel, statsInterval, &instr)
 	go alarms.Process(alarmChannel, &instr)
-	go stats.Process(statChannel, &instr)
+	go stats.Process(statChannel, alarmChannel, &instr)
 
 	// keep program running until user stops it with <Ctrl-C>
 	for {
