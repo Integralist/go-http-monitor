@@ -8,6 +8,7 @@ binary := dist/httpmon
 #
 # examples:
 # 	make run flags="-h"
+# 	make run flags="-populate"
 # 	make run flags="-stats 2"
 # 	make run flags="-stats 2 -threshold 5"
 

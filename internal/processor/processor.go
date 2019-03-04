@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"io"
 	"time"
 
 	"github.com/integralist/go-http-monitor/internal/alarms"
@@ -11,7 +12,7 @@ import (
 // Process reads the access.log at a set interval and then generates a
 // stats task to be processed and displayed to the user.
 func Process(
-	loc string,
+	f io.Writer,
 	statChannel chan<- stats.Stat,
 	alarmChannel chan<- alarms.Alarm,
 	statInterval int,

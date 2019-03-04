@@ -24,6 +24,7 @@ var (
 	ips           []string
 	location      string
 	pages         []string
+	populate      *bool
 	statsInterval int
 	threshold     int
 	unit          string
@@ -40,6 +41,7 @@ func init() {
 
 	// flag configuration
 	help = flag.Bool("help", false, "show available command flags")
+	populate = flag.Bool("populate", false, "populate access log with simulated http requests")
 	const (
 		flagEvaluationValue    = 2
 		flagEvaluationUsage    = "monitoring evaluation period in minutes"
@@ -119,7 +121,7 @@ func main() {
 	// surfacing all the _unexpected_ things that happened.
 	instr.Logger.Debug("STARTUP_SUCCESSFUL")
 
-	// open a r/w file descriptor for the access log so we can seek next position
+	// open a r/w file descriptor for the access log for dynamic population
 	f, err := os.Create(location)
 	if err != nil {
 		instr.Logger.Fatal("ACCESS_OPEN_FAILED")
@@ -142,14 +144,14 @@ func main() {
 	statChannel := make(chan stats.Stat)
 
 	// start various background goroutines
-	go processor.Process(location, statChannel, alarmChannel, statsInterval, &instr)
+	go processor.Process(f, statChannel, alarmChannel, statsInterval, &instr)
 	go alarms.Process(alarmChannel, &instr)
 	go stats.Process(statChannel, &instr)
 
 	// keep program running until user stops it with <Ctrl-C>
 	for {
-		// in the mean time, if no active access log provided, we'll simulate http requests
-		if location == "./access.log" {
+		// if requested, we'll populate the given access log with simulated http requests
+		if *populate {
 			line := generator.RandomRequest(ips, usernames, pages, generator.LastDate)
 			generator.Generate(f, line, &instr)
 		}
