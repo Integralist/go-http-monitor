@@ -19,6 +19,7 @@ func Generate(f io.WriteCloser, line []byte, instr *instrumentator.Instr) {
 		instr.Logger.Error("ACCESS_WRITE_FAILED")
 	}
 
+	// note: would a time.Tick channel been more appropriate? 🤔
 	time.Sleep(time.Millisecond * time.Duration(100))
 }
 
