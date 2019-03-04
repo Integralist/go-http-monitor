@@ -121,8 +121,14 @@ func main() {
 	// surfacing all the _unexpected_ things that happened.
 	instr.Logger.Debug("STARTUP_SUCCESSFUL")
 
+	// open a readonly file descriptor for the access log
+	f, err := os.Open(location)
+	if err != nil {
+		instr.Logger.Fatal("ACCESS_OPEN_FAILED")
+	}
+
 	// open a r/w file descriptor for the access log for dynamic population
-	f, err := os.Create(location)
+	fileRW, err := os.Create(location)
 	if err != nil {
 		instr.Logger.Fatal("ACCESS_OPEN_FAILED")
 	}
@@ -130,20 +136,23 @@ func main() {
 	// handle Ctrl-C from user to stop the program
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt)
-	go func(f io.WriteCloser) {
+	go func(f io.ReadCloser, fileRW io.WriteCloser) {
 		for sig := range sigs {
+			// clean-up resources in case of failure
 			f.Close()
+			fileRW.Close()
+
 			instr.Logger.Info("CTRL-C RECEIVED")
 			instr.Logger.Info(sig)
 			os.Exit(2)
 		}
-	}(f)
+	}(f, fileRW)
 
 	// channel creation for synchronizing data
 	alarmChannel := make(chan alarms.Alarm)
 	statChannel := make(chan stats.Stat)
 
-	// start various background goroutines
+	// start various background goroutines, passing in their dependencies
 	go processor.Process(f, statChannel, alarmChannel, statsInterval, &instr)
 	go alarms.Process(alarmChannel, &instr)
 	go stats.Process(statChannel, &instr)
@@ -153,7 +162,7 @@ func main() {
 		// if requested, we'll populate the given access log with simulated http requests
 		if *populate {
 			line := generator.RandomRequest(ips, usernames, pages, generator.LastDate)
-			generator.Generate(f, line, &instr)
+			generator.Generate(fileRW, line, &instr)
 		}
 	}
 }
