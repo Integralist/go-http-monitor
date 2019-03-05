@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"sync"
 
 	"github.com/integralist/go-http-monitor/internal/alarms"
 	"github.com/integralist/go-http-monitor/internal/generator"
@@ -152,10 +153,13 @@ func main() {
 	alarmChannel := make(chan alarms.Alarm)
 	statChannel := make(chan stats.Stat)
 
+	// initialize a thread safe map for passing into our stats processor
+	statsTracking := new(sync.Map)
+
 	// start various background goroutines, passing in their dependencies
 	go processor.Process(f, statChannel, statsInterval, &instr)
 	go alarms.Process(alarmChannel, &instr)
-	go stats.Process(statChannel, alarmChannel, &instr)
+	go stats.Process(statChannel, alarmChannel, statsTracking, &instr)
 
 	// keep program running until user stops it with <Ctrl-C>
 	for {
