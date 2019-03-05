@@ -9,6 +9,7 @@ import (
 
 // Stat contains fields relevant to a statistical analysis.
 type Stat struct {
+	Logs []byte
 }
 
 // Process data sent to the specified channel for statistical analysis.
