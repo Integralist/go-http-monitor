@@ -1,6 +1,7 @@
 package stats
 
 import (
+	"fmt"
 	"strings"
 	"sync"
 
@@ -91,14 +92,14 @@ func Process(
 						  (requestedPages) map[url]: counter
 			*/
 			statsTracking.Store(ip, data)
-
-			// TODO: should statsTracking be a separate sync.Map created as part of
-			// this function and then we cross-merge it back to a top-level tracker?
 		}
 
 		// we'll just dump out the users, and the number of times they requested
 		// specific pages as a basic indicator of some stats collected.
+		fmt.Println("--------------------------------------")
+		fmt.Printf("Stats for last 10 seconds of requests:\n\n")
 		formatter.Pretty(data)
+		fmt.Println("--------------------------------------")
 
 		alarmChannel <- alarms.Alarm{}
 	}

@@ -26,6 +26,7 @@ var (
 	location      string
 	pages         []string
 	populate      *bool
+	sections      []string
 	statsInterval int
 	threshold     int
 	unit          string
@@ -99,6 +100,13 @@ func init() {
 		"Mark",
 		"Simon",
 	}
+	sections = []string{
+		"foo",
+		"bar",
+		"baz",
+		"qux",
+		"qiz",
+	}
 	pages = []string{
 		"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
 		"n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
@@ -165,7 +173,7 @@ func main() {
 	for {
 		// if requested, we'll populate the given access log with simulated http requests
 		if *populate {
-			line := generator.RandomRequest(ips, usernames, pages, generator.LastDate)
+			line := generator.RandomRequest(ips, usernames, pages, sections, generator.LastDate)
 			generator.Generate(fileRW, line, &instr)
 		}
 	}

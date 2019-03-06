@@ -24,11 +24,12 @@ func Generate(f io.WriteCloser, line []byte, instr *instrumentator.Instr) {
 }
 
 // RandomRequest generates a fake access log record
-func RandomRequest(ips, usernames, pages []string, lastDate time.Time) []byte {
+func RandomRequest(ips, usernames, pages, sections []string, lastDate time.Time) []byte {
 	ip := ips[rand.Intn(5)]
 	username := usernames[rand.Intn(5)]
 	pageIndex := rand.Intn(25)
-	page := pages[pageIndex]
+	sectionIndex := rand.Intn(5)
+	page := fmt.Sprintf("%s/%s", sections[sectionIndex], pages[pageIndex])
 	contentLength := pageIndex + 1
 
 	timeAdd := []time.Duration{

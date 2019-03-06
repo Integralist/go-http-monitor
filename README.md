@@ -76,11 +76,96 @@ The following requirements were what I was provided with:
 - Have something else write to the log file.
 - Dockerize if possible.
 
+## Generated Access Log
+
+Because I don't have an actively written to `access.log` file by default, I'm generating one as part of this program. If you happen to have one you should be able to provide it to the program using the `-location` flag (the default value is `"./access.log"` which is a file comitted as part of this repository and is _reset_ on each call to `make run` -- see the [Makefile](./Makefile) for more details).
+
+## Running the program
+
+I use a [Makefile](./Makefile) to generate shortened commands, to make running the program easier:
+
+- `make run`
+- `make build`
+- `make test`
+- `make clean`
+
+If you want the program to generate access logs for you, then ensure you use the `-populate` flag, like so:
+
+```bash
+make run flags="-populate"
+```
+
+## Statistical Output
+
+I don't do anything fancy with the log data other than pretty print specific users and their requests over the past N seconds, as defined by the `-stats` flag (see the [flags](#flags) section above for more details).
+
+```
+--------------------------------------
+Stats for last 10 seconds of requests:
+
+{
+  "Bob": {
+    "/bar/f": 1,
+    "/bar/n": 1,
+    "/bar/p": 2,
+    "/baz/u": 1,
+    "/baz/v": 1,
+    "/foo/g": 1,
+    "/foo/n": 3,
+    "/foo/s": 1,
+    "/qiz/m": 3,
+    "/qiz/o": 1,
+    "/qiz/w": 1,
+    "/qux/c": 2,
+    "/qux/d": 2,
+    "/qux/t": 1
+  },
+  "Jane": {
+    "/bar/f": 1,
+    "/bar/n": 1,
+    "/bar/p": 2,
+    "/baz/u": 1,
+    "/baz/v": 1,
+    "/foo/g": 1,
+    "/foo/n": 3,
+    "/foo/s": 1,
+    "/qiz/m": 3,
+    "/qiz/o": 1,
+    "/qiz/w": 1,
+    "/qux/c": 2,
+    "/qux/d": 2,
+    "/qux/t": 1
+  },
+  "Lisa": {
+    "/bar/f": 1,
+    "/bar/n": 1,
+    "/bar/p": 2,
+    "/baz/u": 1,
+    "/baz/v": 1,
+    "/foo/g": 1,
+    "/foo/n": 3,
+    "/foo/s": 1,
+    "/qiz/m": 3,
+    "/qiz/o": 1,
+    "/qiz/w": 1,
+    "/qux/c": 2,
+    "/qux/d": 2,
+    "/qux/t": 1
+  },
+  "Mark": {
+    "/bar/m": 1,
+    "/bar/s": 1,
+    "/qiz/y": 1,
+    "/qux/m": 1,
+    "/qux/n": 1
+  }
+}
+--------------------------------------
+```
+
 ## TODO
 
-- don't generate access.log records if user provides their own access.log
-- name some packages more appropriately (e.g. verbs not nouns)
-- figure out how to calculate when requests per section go over/under a threshold
-- figure out what 'interesting' stats to show every 10s
+- more idiomatic package names
+- don't generate a `stats.Stat` struct until stats analysis is needed
 - write test(s)
 - dockerize
