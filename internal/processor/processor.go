@@ -15,11 +15,6 @@ type statReaderSeeker interface {
 	Stat() (os.FileInfo, error)
 }
 
-// TODO:
-// - set var with time.Now so we can track last ten seconds in for loop
-// - in for loop, look at current time.Now and compare to var of time.Now
-// - if time is greater or equal to ten seconds, then send stat message
-
 // Process reads the access.log at a set interval and then generates a
 // stats task to be processed and displayed to the user.
 func Process(
@@ -55,11 +50,13 @@ func Process(
 		buffer := make([]byte, bufferSize)
 		bytesRead, err := f.Read(buffer)
 		if err != nil {
-			instr.Logger.Warn("FILE_STAT_FAILED")
+			// TODO: utilize tags for the raw error message and use FILE_STAT_FAILED
+			// for the main message
+			instr.Logger.Error(err)
 		}
 		size = size + int64(bytesRead)
 
-		// send relevant information
+		// send relevant log information
 		//
 		// TODO: the design is a bit odd here, we should construct a stat object
 		// from within the stats package, so this should be sending just the logs

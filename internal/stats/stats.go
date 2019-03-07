@@ -5,7 +5,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/integralist/go-http-monitor/internal/alarms"
 	"github.com/integralist/go-http-monitor/internal/formatter"
 	"github.com/integralist/go-http-monitor/internal/instrumentator"
 )
@@ -28,7 +27,6 @@ type requestData map[string]requestedPages
 // Process data sent to the specified channel for statistical analysis.
 func Process(
 	statChannel <-chan Stat,
-	alarmChannel chan<- alarms.Alarm,
 	statsTracking Analysis,
 	instr *instrumentator.Instr) {
 
@@ -100,7 +98,5 @@ func Process(
 		fmt.Printf("Stats for last 10 seconds of requests:\n\n")
 		formatter.Pretty(data)
 		fmt.Println("--------------------------------------")
-
-		alarmChannel <- alarms.Alarm{}
 	}
 }

@@ -29,7 +29,6 @@ var (
 	sections      []string
 	statsInterval int
 	threshold     int
-	unit          string
 	usernames     []string
 	version       string // set via -ldflags in Makefile
 )
@@ -46,15 +45,13 @@ func init() {
 	populate = flag.Bool("populate", false, "populate access log with simulated http requests")
 	const (
 		flagEvaluationValue    = 2
-		flagEvaluationUsage    = "monitoring evaluation period in minutes"
+		flagEvaluationUsage    = "alarm monitoring evaluation period in minutes"
 		flagLocationValue      = "./access.log"
 		flagLocationUsage      = "location of access.log file to monitor"
 		flagStatsIntervalValue = 10
 		flagStatsIntervalUsage = "statistic output interval in seconds"
-		flagThresholdValue     = 10
-		flagThresholdUsage     = "average alarm threshold time period"
-		flagUnitValue          = "second"
-		flagUnitUsage          = "unit of time of the alarm threshold"
+		flagThresholdValue     = 3
+		flagThresholdUsage     = "alarm threshold for total number of requests on avg"
 	)
 	flag.IntVar(&evaluation, "evaluation", flagEvaluationValue, flagEvaluationUsage)
 	flag.IntVar(&evaluation, "e", flagEvaluationValue, flagEvaluationUsage+" (shorthand)")
@@ -64,8 +61,6 @@ func init() {
 	flag.IntVar(&statsInterval, "s", flagStatsIntervalValue, flagStatsIntervalUsage+" (shorthand)")
 	flag.IntVar(&threshold, "threshold", flagThresholdValue, flagThresholdUsage)
 	flag.IntVar(&threshold, "t", flagThresholdValue, flagThresholdUsage+" (shorthand)")
-	flag.StringVar(&unit, "unit", flagUnitValue, flagUnitUsage)
-	flag.StringVar(&unit, "u", flagUnitValue, flagUnitUsage+" (shorthand)")
 	flag.Parse()
 
 	// instrumentation configuration
@@ -136,6 +131,15 @@ func main() {
 		instr.Logger.Fatal("ACCESS_OPEN_FAILED")
 	}
 
+	// open a readonly file descriptor for counting the access log. the rationale
+	// for having another descriptor is because the Seek (and other File calls)
+	// done within the processor package will mess up the line counting we need
+	// to do within the alarms package.
+	fc, err := os.Open(location)
+	if err != nil {
+		instr.Logger.Fatal("ACCESS_OPEN_FAILED")
+	}
+
 	// open a r/w file descriptor for the access log for dynamic population
 	fileRW, err := os.Create(location)
 	if err != nil {
@@ -166,8 +170,9 @@ func main() {
 
 	// start various background goroutines, passing in their dependencies
 	go processor.Process(f, statChannel, statsInterval, &instr)
+	go alarms.Monitor(fc, alarmChannel, evaluation, threshold, &instr)
 	go alarms.Process(alarmChannel, &instr)
-	go stats.Process(statChannel, alarmChannel, statsTracking, &instr)
+	go stats.Process(statChannel, statsTracking, &instr)
 
 	// keep program running until user stops it with <Ctrl-C>
 	for {
