@@ -2,6 +2,31 @@
 
 > Network monitoring is the use of a system that constantly monitors a computer network for slow or failing components and that notifies the network administrator (via email, SMS or other alarms) in case of outages or other trouble. -- [Wikipedia](https://en.wikipedia.org/wiki/Network_monitoring)
 
+---
+
+## Important!
+
+This project is not functioning. 
+
+It was started in my spare time, but I just don't have enough consistent time outside of work hours to dedicate to finish up the work (a two month old baby will do that for you 😉).
+
+I'm pushing it online as a reference point for anyone interested in this sort of thing.
+
+---
+
+## Table of Contents
+
+- [Project](#project)
+- [Flags](#flags)
+- [Access Log Format](#access-log-format)
+- [Requirements](#requirements)
+- [Generated Access Log](#generated-access-log)
+- [Running the program](#running-the-program)
+- [Statistical Output](#statistical-output)
+- [TODO](#todo)
+
+## Project
+
 This program monitors an actively updated `access.log` file, and notifies users when thresholds are either exceeded or recover. The thresholds are configurable via command-line flags.
 
 This project was designed as part of a interview take-home code test, and so the program itself generates the `access.log` and populates it with data in order to simulate real traffic patterns (that logic is, as you can imagine, very basic).
@@ -10,27 +35,25 @@ This project was designed as part of a interview take-home code test, and so the
 
 ```
 -e int
-      monitoring evaluation period in minutes (shorthand) (default 2)
+      alarm monitoring evaluation period in minutes (shorthand) (default 2)
 -evaluation int
-      monitoring evaluation period in minutes (default 2)
+      alarm monitoring evaluation period in minutes (default 2)
 -help
       show available command flags
 -l string
       location of access.log file to monitor (shorthand) (default "./access.log")
 -location string
       location of access.log file to monitor (default "./access.log")
+-populate
+      populate access log with simulated http requests
 -s int
       statistic output interval in seconds (shorthand) (default 10)
 -stats int
       statistic output interval in seconds (default 10)
 -t int
-      average alarm threshold time period (shorthand) (default 10)
+      alarm threshold for total number of requests on avg (shorthand) (default 3)
 -threshold int
-      average alarm threshold time period (default 10)
--u string
-      unit of time of the alarm threshold (shorthand) (default "second")
--unit string
-      unit of time of the alarm threshold (default "second")
+      alarm threshold for total number of requests on avg (default 3)
 ```
 
 ## Access Log Format
@@ -93,6 +116,12 @@ If you want the program to generate access logs for you, then ensure you use the
 
 ```bash
 make run flags="-populate"
+```
+
+Which equates to the longer underlying command:
+
+```bash
+go run -ldflags "-X main.version=50a7ef2" cmd/httpmon/main.go -populate
 ```
 
 ## Statistical Output
@@ -163,9 +192,13 @@ Stats for last 10 seconds of requests:
 --------------------------------------
 ```
 
+> Note: when generating access log records I specify users, and so if you happen to use a real access log without user's then the data structure I'm using will likely break for you (see [TODO](#todo) section below).
+
 ## TODO
 
-- more idiomatic package names
-- don't generate a `stats.Stat` struct until stats analysis is needed
-- write test(s)
-- dockerize
+- finish alert monitoring logic.
+- change stats data structure to not rely on users in access log record.
+- write test(s).
+- don't generate a `stats.Stat` struct until stats analysis is needed.
+- dockerize.
+- more idiomatic package names.
