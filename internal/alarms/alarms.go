@@ -29,6 +29,7 @@ func Monitor(
 	threshold int,
 	instr *instrumentator.Instr) {
 
+	var lineTracker int
 	// sleepInterval := time.Minute * time.Duration(evaluation)
 	iteration := 0
 	evaluationSecs := 60 * evaluation
@@ -57,7 +58,12 @@ func Monitor(
 		// reset position back to zero
 		f.Seek(0, 0)
 
-		avg := float64(evaluationSecs) / float64(lineCount)
+		avg := float64(evaluationSecs) / float64(lineCount-lineTracker) * 100
+
+		lineTracker = lineCount
+
+		fmt.Println(lineCount)
+		fmt.Println(avg)
 
 		if avg > float64(threshold) {
 			alarmChannel <- Alarm{}
