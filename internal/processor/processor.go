@@ -29,7 +29,7 @@ func Process(
 	iteration := 0
 	sleepInterval := time.Second * time.Duration(statInterval)
 
-	// move cursor to end of file (read for next read)
+	// move cursor to end of file (ready for next read)
 	f.Seek(cursor, io.SeekEnd)
 
 	// get current size of file, so we can calculate the diff in size
