@@ -30,7 +30,7 @@ func Monitor(
 	instr *instrumentator.Instr) {
 
 	var lineTracker int
-	// sleepInterval := time.Minute * time.Duration(evaluation)
+	sleepInterval := time.Minute * time.Duration(evaluation)
 	iteration := 0
 	evaluationSecs := 60 * evaluation
 
@@ -38,16 +38,9 @@ func Monitor(
 		// don't bother checking alarm threshold exceeded on program start
 		if iteration == 0 {
 			iteration = 1
-			// time.Sleep(sleepInterval)
-			time.Sleep(time.Second * time.Duration(30))
+			time.Sleep(sleepInterval)
 			continue
 		}
-
-		// lineCount, err := lineCounter(f)
-		// if err != nil {
-		// 	// TODO: use tags for raw error message
-		// 	instr.Logger.Error(err)
-		// }
 
 		fileScanner := bufio.NewScanner(f)
 		lineCount := 0
@@ -65,12 +58,13 @@ func Monitor(
 		fmt.Println(lineCount)
 		fmt.Println(avg)
 
+		// TODO: not generating enough traffic to cause the threshold to be
+		// exceeded.
 		if avg > float64(threshold) {
 			alarmChannel <- Alarm{}
 		}
 
-		// time.Sleep(sleepInterval)
-		time.Sleep(time.Second * time.Duration(30))
+		time.Sleep(sleepInterval)
 		continue
 	}
 }
