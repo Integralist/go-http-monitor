@@ -2,21 +2,10 @@
 
 > Network monitoring is the use of a system that constantly monitors a computer network for slow or failing components and that notifies the network administrator (via email, SMS or other alarms) in case of outages or other trouble. -- [Wikipedia](https://en.wikipedia.org/wiki/Network_monitoring)
 
----
-
-## Important!
-
-This project is not functioning. 
-
-It was started in my spare time, but I just don't have enough consistent time outside of work hours to dedicate to finish up the work (a two month old baby will do that for you 😉).
-
-I'm pushing it online as a reference point for anyone interested in this sort of thing.
-
----
-
 ## Table of Contents
 
 - [Project](#project)
+- [Architecture](#architecture)
 - [Flags](#flags)
 - [Access Log Format](#access-log-format)
 - [Requirements](#requirements)
@@ -30,6 +19,20 @@ I'm pushing it online as a reference point for anyone interested in this sort of
 This program monitors an actively updated `access.log` file, and notifies users when thresholds are either exceeded or recover. The thresholds are configurable via command-line flags.
 
 This project was designed as part of a interview take-home code test, and so the program itself generates the `access.log` and populates it with data in order to simulate real traffic patterns (that logic is, as you can imagine, very basic).
+
+### Status
+
+This project is not complete.
+
+It was started in my spare time, but I just don't have enough consistent time, outside of work hours, to dedicate to finish up the task (a two month old baby will do that for you 😉).
+
+I'm pushing it online as a reference point for anyone interested in this sort of thing.
+
+## Architecture
+
+<a href="https://raw.githubusercontent.com/Integralist/go-http-monitor/master/architecture.png" target="_blank">
+  <img src="./architecture.png">
+</a>
 
 ## Flags
 
@@ -201,4 +204,10 @@ Stats for last 10 seconds of requests:
 - write test(s).
 - don't generate a `stats.Stat` struct until stats analysis is needed.
 - dockerize.
+- refactor code:
+    - such as the `main` function to be smaller in size/responsibility.
+    - dedupe of similar logic for processing logs across packages.
+    - clean-up stdout printed statements.
 - more idiomatic package names.
+
+> Note: there maybe other 'todos', so grep the codebase for `TODO:`.

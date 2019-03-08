@@ -2,7 +2,6 @@ package alarms
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"io"
 	"time"
@@ -12,6 +11,7 @@ import (
 
 // Alarm contains fields relevant to an exceeded monitoring threshold.
 type Alarm struct {
+	Message string
 }
 
 type readSeeker interface {
@@ -29,7 +29,9 @@ func Monitor(
 	threshold int,
 	instr *instrumentator.Instr) {
 
+	var wasExceeded bool
 	var lineTracker int
+
 	sleepInterval := time.Minute * time.Duration(evaluation)
 	iteration := 0
 	evaluationSecs := 60 * evaluation
@@ -42,52 +44,46 @@ func Monitor(
 			continue
 		}
 
+		currentLineCount := 0
+
 		fileScanner := bufio.NewScanner(f)
-		lineCount := 0
 		for fileScanner.Scan() {
-			lineCount++
+			currentLineCount++
 		}
 
 		// reset position back to zero
 		f.Seek(0, 0)
 
-		avg := float64(evaluationSecs) / float64(lineCount-lineTracker) * 100
+		numRequests := currentLineCount - lineTracker
+		avg := float64(numRequests) / float64(evaluationSecs)
+		lineTracker = currentLineCount
 
-		lineTracker = lineCount
+		fmt.Println("currentLineCount:", currentLineCount)
+		fmt.Println("numRequests:", numRequests)
+		fmt.Println("avg:", avg)
 
-		fmt.Println(lineCount)
-		fmt.Println(avg)
+		now := time.Now().Format(time.UnixDate)
 
-		// TODO: not generating enough traffic to cause the threshold to be
-		// exceeded.
 		if avg > float64(threshold) {
-			alarmChannel <- Alarm{}
+			wasExceeded = true
+			msg := fmt.Sprintf("High traffic generated an alert - hits = %f, triggered at %s", avg, now)
+
+			alarmChannel <- Alarm{
+				Message: msg,
+			}
+		}
+
+		if wasExceeded && avg < float64(threshold) {
+			wasExceeded = false
+			msg := fmt.Sprintf("High traffic alarm has now recovered at %s", now)
+
+			alarmChannel <- Alarm{
+				Message: msg,
+			}
 		}
 
 		time.Sleep(sleepInterval)
 		continue
-	}
-}
-
-// Alternative line counter that benefits from assembly optimized functions
-// offered by the bytes package to search characters in a byte slice.
-func lineCounter(r io.Reader) (int, error) {
-	// my log lines are ~80 bytes in length
-	buf := make([]byte, 80*1024)
-	count := 0
-	lineSep := []byte{'\n'}
-
-	for {
-		c, err := r.Read(buf)
-		count += bytes.Count(buf[:c], lineSep)
-
-		switch {
-		case err == io.EOF:
-			return count, nil
-
-		case err != nil:
-			return count, err
-		}
 	}
 }
 

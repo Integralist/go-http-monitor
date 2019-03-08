@@ -50,7 +50,7 @@ func init() {
 		flagLocationUsage      = "location of access.log file to monitor"
 		flagStatsIntervalValue = 10
 		flagStatsIntervalUsage = "statistic output interval in seconds"
-		flagThresholdValue     = 3
+		flagThresholdValue     = 10
 		flagThresholdUsage     = "alarm threshold for total number of requests on avg"
 	)
 	flag.IntVar(&evaluation, "evaluation", flagEvaluationValue, flagEvaluationUsage)

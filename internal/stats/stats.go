@@ -44,6 +44,8 @@ func Process(
 		pages := make(requestedPages)
 		data := make(requestData)
 
+		// TODO: this logic is relying on our simulated data which always has a
+		// signed in user recorded as part of the log line.
 		for _, record := range strings.Split(string(s.Logs), "\n") {
 			cells := strings.Split(record, " ")
 

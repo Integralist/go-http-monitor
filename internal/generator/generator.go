@@ -19,11 +19,19 @@ func Generate(f io.WriteCloser, line []byte, instr *instrumentator.Instr) {
 		instr.Logger.Error("ACCESS_WRITE_FAILED")
 	}
 
+	durations := []time.Duration{
+		time.Millisecond,
+		time.Second,
+	}
+
+	// randomize duration selection
+	duration := rand.Intn(2)
+
 	// randomize the sleep
-	seed := rand.Intn(10)
+	seed := rand.Intn(2)
 
 	// note: would a time.Tick channel been more appropriate? 🤔
-	time.Sleep(time.Millisecond * time.Duration(seed))
+	time.Sleep(durations[duration] * time.Duration(seed))
 }
 
 // RandomRequest generates a fake access log record
