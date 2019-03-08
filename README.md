@@ -5,6 +5,7 @@
 ## Table of Contents
 
 - [Project](#project)
+- [Status](#status)
 - [Architecture](#architecture)
 - [Flags](#flags)
 - [Access Log Format](#access-log-format)
@@ -20,11 +21,13 @@ This program monitors an actively updated `access.log` file, and notifies users 
 
 This project was designed as part of a interview take-home code test, and so the program itself generates the `access.log` and populates it with data in order to simulate real traffic patterns (that logic is, as you can imagine, very basic).
 
-### Status
+## Status
 
-This project is not complete.
+This project is not complete (part of the requirements was to generate tests and to dockerize the program).
 
-It was started in my spare time, but I just don't have enough consistent time, outside of work hours, to dedicate to finish up the task (a two month old baby will do that for you 😉).
+Also, my generation of access log requests is primitive and my dynamic generation means it's not able to swing back from 'alarm' state to 'recovered'.
+
+With a bit more time I'd be able to wrap up those parts as well as do some refactoring (see [TODO](#todo) section). But my spare time outside of normal work hours is very restricted (a two month old baby will do that for you 😉).
 
 I'm pushing it online as a reference point for anyone interested in this sort of thing.
 
@@ -33,6 +36,38 @@ I'm pushing it online as a reference point for anyone interested in this sort of
 <a href="https://raw.githubusercontent.com/Integralist/go-http-monitor/master/architecture.png" target="_blank">
   <img src="./architecture.png">
 </a>
+
+> Note: many of the functions are spun up within goroutines to assist the concurrent nature of the program.
+
+Below is the tree hierarchy for this project:
+
+```
+.
+├── LICENSE
+├── Makefile
+├── README.md
+├── access.log
+├── architecture.png
+├── cmd
+│   └── httpmon
+│       └── main.go
+├── dist
+├── go.mod
+├── go.sum
+└── internal
+    ├── alarms
+    │   └── alarms.go
+    ├── formatter
+    │   └── formatter.go
+    ├── generator
+    │   └── generator.go
+    ├── instrumentator
+    │   └── instrumentator.go
+    ├── processor
+    │   └── processor.go
+    └── stats
+        └── stats.go
+```
 
 ## Flags
 
